@@ -1,0 +1,17 @@
+**/venv/
+**/.venv/
+
+**/.git/
+
+**/*.db
+**/*.db-wal
+**/*.db-shm
+
+**/__pycache__/
+**/*.pyc
+
+**/.idea/
+**/.vscode/
+
+**/logs/*.log
+**/logs/*.txt

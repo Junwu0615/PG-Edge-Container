@@ -25,11 +25,13 @@ tree -d -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data'
 
 ### *B.　Command Platform*
 ```
-docker build -t pg-python-cp:v1 .
+cd ..
+docker build -t pg-python-cp:v1 -f ./PG-Edge-Container/cp/Dockerfile . --no-cache
 
 docker run -d \
   --name pg-python-cp \
   --env-file ./cp/.env \
+  --add-host host.docker.internal:host-gateway \
   pg-python-cp:v1
 ```
 
@@ -37,12 +39,13 @@ docker run -d \
 
 ### *C.　Instance*
 ```
-cd inst
-docker build -t pg-python-inst:v1 -f docker/Dockerfile.inst . --no-cache
+cd ..
+docker build -t pg-python-inst:v1 -f ./PG-Edge-Container/inst/Dockerfile . --no-cache
 
 docker run -d \
   --name pg-python-edge-01 \
-  --env-file ./inst/.env \
+  --env-file ./PG-Edge-Container/inst/.env \
+  --add-host host.docker.internal:host-gateway \
   pg-python-inst:v1
 ```
 
