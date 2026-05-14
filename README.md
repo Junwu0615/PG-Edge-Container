@@ -15,7 +15,63 @@ tree -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data'
 tree -d -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data'
 
 .
-└── README.md
+├── Makefile
+├── README.md
+├── cp
+│   ├── Dockerfile
+│   ├── data
+│   └── src
+│       ├── __init__.py
+│       └── core
+│           ├── __init__.py
+│           ├── models
+│           │   ├── __init__.py
+│           │   ├── simulator.py
+│           │   └── sink_format.py
+│           └── v2
+│               ├── __init__.py
+│               ├── api
+│               │   └── __init__.py
+│               ├── cp
+│               │   ├── __init__.py
+│               │   └── main.py
+│               ├── factory_config.yaml
+│               ├── inst
+│               │   ├── __init__.py
+│               │   └── main.py
+│               └── scripts
+│                   ├── __init__.py
+│                   ├── create_topic.py
+│                   ├── init.py
+│                   └── topics_config.json
+└── inst
+    ├── Dockerfile
+    ├── data
+    │   └── kafka_consumer_local.db
+    └── src
+        ├── __init__.py
+        └── core
+            ├── __init__.py
+            ├── models
+            │   ├── __init__.py
+            │   ├── simulator.py
+            │   └── sink_format.py
+            └── v2
+                ├── __init__.py
+                ├── api
+                │   └── __init__.py
+                ├── cp
+                │   ├── __init__.py
+                │   └── main.py
+                ├── factory_config.yaml
+                ├── inst
+                │   ├── __init__.py
+                │   └── main.py
+                └── scripts
+                    ├── __init__.py
+                    ├── create_topic.py
+                    ├── init.py
+                    └── topics_config.json
 ```
 
 </ul>
@@ -25,42 +81,22 @@ tree -d -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data'
 
 ### *B.　Command Platform*
 ```
-# Before Build
-cp ../PG-APP-Core/src ./cp/src
-rm -r ./cp/src/scripts
-rm -r ./cp/src/core/v1
-cp ./cp/.env ./cp/src/core/v2/cp/.env
-
-# Build
-docker build -t pg-python-cp:v1 -f ./cp/Dockerfile . --no-cache
-
-# Run
-docker run -d \
-  --name pg-python-cp \
-  --env-file ./cp/.env \
-  --add-host host.docker.internal:host-gateway \
-  pg-python-cp:v1
+make cp-build ver=v1
+make cp-run ver=v1
+make cp-logs name=pg-python-cp
+make cp-clear name=pg-python-cp
+make cp-bash name=pg-python-edge-01
 ```
 
 <br>
 
 ### *C.　Instance*
 ```
-# Before Build
-cp ../PG-APP-Core/src ./inst/src
-rm -r ./inst/src/scripts
-rm -r ./inst/src/core/v1
-cp ./inst/.env ./inst/src/core/v2/inst/.env
-
-# Build
-docker build -t pg-python-inst:v1 -f ./inst/Dockerfile . --no-cache
-
-# Run
-docker run -d \
-  --name pg-python-edge-01 \
-  --env-file ./inst/.env \
-  --add-host host.docker.internal:host-gateway \
-  pg-python-inst:v1
+make inst-build ver=v1
+make inst-run ver=v1
+make inst-logs name=pg-python-edge-01
+make inst-clear name=pg-python-edge-01
+make inst-bash name=pg-python-edge-01
 ```
 
 <br><br><br>
