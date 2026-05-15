@@ -34,7 +34,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /install /usr/local
 
 # 複製原始碼
-COPY ./inst/src /app/src
+COPY ./docker/inst/src /app/src
 
 # 環境變數設置
 ENV PYTHONDONTWRITEBYTECODE=1 \

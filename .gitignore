@@ -5,8 +5,8 @@ __pycache__
 venv
 logs
 
-inst/data/
-cp/data/
+docker/inst/data/
+docker/cp/data/
 
-inst/src/
-cp/src/
+docker/inst/src/
+docker/cp/src/
