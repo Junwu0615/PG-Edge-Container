@@ -44,7 +44,7 @@ make cp-build ver=v1
 make cp-run ver=v1
 make cp-logs name=pg-python-cp
 make cp-clear name=pg-python-cp
-make cp-bash name=pg-python-edge-01
+make cp-bash name=pg-python-cp
 ```
 
 <br>
