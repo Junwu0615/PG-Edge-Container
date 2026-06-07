@@ -4,15 +4,14 @@
 
 <br>
 
-### *A.　Roadmap*
+### *A.　Implement*
 
 <details>
 <summary><b><i>　Tree </i></b></summary>
 <ul>
 
 ```bash
-tree -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data'
-tree -d -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data'
+tree -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data|charts'
 
 .
 ├── LICENSE
