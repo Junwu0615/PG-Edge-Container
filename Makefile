@@ -7,21 +7,21 @@ inst-build:
 		echo "Error: 必須指定 IMAGE VERSION，ex: make inst-build ver=v1"; \
 		exit 1; \
 	fi
-	mkdir -p $(CURDIR)/docker/inst/data
-	rm -rf ./docker/inst/src
-	mkdir -p ./docker/inst/src
-	cp -r ../PG-APP-Core/src ./docker/inst
-	rm -rf ./docker/inst/src/scripts
-	rm -rf ./docker/inst/src/__pycache__
-	rm -rf ./docker/inst/src/core/v1
-	rm -rf ./docker/inst/src/core/__pycache__
-	rm -rf ./docker/inst/src/core/v2/api
-	rm -rf ./docker/inst/src/core/v2/cp
-	rm -rf ./docker/inst/src/core/v2/scripts
-	cp ./docker/inst/.env ./docker/inst/src/core/v2/inst/.env
+	mkdir -p $(CURDIR)/inst/data
+	rm -rf ./inst/src
+	mkdir -p ./inst/src
+	cp -r ../PG-APP-Core/src ./inst
+	rm -rf ./inst/src/scripts
+	rm -rf ./inst/src/__pycache__
+	rm -rf ./inst/src/core/v1
+	rm -rf ./inst/src/core/__pycache__
+	rm -rf ./inst/src/core/v2/api
+	rm -rf ./inst/src/core/v2/cp
+	rm -rf ./inst/src/core/v2/scripts
+	cp ./inst/.env ./inst/src/core/v2/inst/.env
 
 	@echo "* Build"
-	docker build -t pg-python-inst:$(ver) -f ./docker/inst/Dockerfile . --no-cache
+	docker build -t pg-python-inst:$(ver) -f ./inst/Dockerfile . --no-cache
 	@echo "✅  <make inst-build> done."
 
 inst-run:
@@ -32,9 +32,9 @@ inst-run:
 	fi
 	docker run -d \
 	  --name pg-python-edge-01 \
-	  --env-file ./docker/inst/.env \
+	  --env-file ./inst/.env \
 	  --add-host host.docker.internal:host-gateway \
-	  -v $(CURDIR)/docker/inst/data:/app/data \
+	  -v $(CURDIR)/inst/data:/app/data \
 	  pg-python-inst:$(ver)
 	@echo "✅  <make inst-run> done."
 
@@ -69,21 +69,21 @@ cp-build:
 		echo "Error: 必須指定 IMAGE VERSION，ex: make cp-build ver=v1"; \
 		exit 1; \
 	fi
-	#mkdir -p $(CURDIR)/docker/cp/data
-	rm -rf ./docker/cp/src
-	mkdir -p ./docker/cp/src
-	cp -r ../PG-APP-Core/src ./docker/cp
-	rm -rf ./docker/cp/src/scripts
-	rm -rf ./docker/cp/src/__pycache__
-	rm -rf ./docker/cp/src/core/v1
-	rm -rf ./docker/cp/src/core/__pycache__
-	rm -rf ./docker/cp/src/core/v2/api
-	rm -rf ./docker/cp/src/core/v2/inst
-	rm -rf ./docker/cp/src/core/v2/scripts
-	cp ./docker/cp/.env ./docker/cp/src/core/v2/cp/.env
+	#mkdir -p $(CURDIR)/cp/data
+	rm -rf ./cp/src
+	mkdir -p ./cp/src
+	cp -r ../PG-APP-Core/src ./cp
+	rm -rf ./cp/src/scripts
+	rm -rf ./cp/src/__pycache__
+	rm -rf ./cp/src/core/v1
+	rm -rf ./cp/src/core/__pycache__
+	rm -rf ./cp/src/core/v2/api
+	rm -rf ./cp/src/core/v2/inst
+	rm -rf ./cp/src/core/v2/scripts
+	cp ./cp/.env ./cp/src/core/v2/cp/.env
 
 	@echo "* Build"
-	docker build -t pg-python-cp:$(ver) -f ./docker/cp/Dockerfile . --no-cache
+	docker build -t pg-python-cp:$(ver) -f ./cp/Dockerfile . --no-cache
 	@echo "✅  <make cp-build> done."
 
 cp-run:
@@ -94,9 +94,9 @@ cp-run:
 	fi
 	docker run -d \
 	  --name pg-python-cp \
-	  --env-file ./docker/cp/.env \
+	  --env-file ./cp/.env \
 	  --add-host host.docker.internal:host-gateway \
-	  -v $(CURDIR)/docker/cp/data:/app/data \
+	  -v $(CURDIR)/cp/data:/app/data \
 	  pg-python-cp:$(ver)
 	@echo "✅  <make cp-run> done."
 

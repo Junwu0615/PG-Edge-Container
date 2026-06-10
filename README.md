@@ -17,19 +17,15 @@ tree -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data|charts'
 ├── LICENSE
 ├── Makefile
 ├── README.md
-├── docker
-│   ├── cp
-│   │   ├── Dockerfile
-│   │   ├── data
-│   │   └── src ( copy `PG-APP-Core` )
-│   └── inst
-│       ├── Dockerfile
-│       ├── data
-│       │   ├── kafka_consumer_local.db
-│       │   ├── kafka_consumer_local.db-shm
-│       │   └── kafka_consumer_local.db-wal
-│       └── src ( copy `PG-APP-Core` )
-└── k8s
+├── cp
+│   ├── Dockerfile
+│   ├── data
+│   └── src ( copy `PG-APP-Core` )
+└── inst
+    ├── Dockerfile
+    ├── data
+    │   └── kafka_consumer_local.db
+    └── src ( copy `PG-APP-Core` )
 ```
 
 </ul>
