@@ -1,0 +1,164 @@
+# TODO 測試模式: docker compose ( gitlab ci ) + gitops ( k3s ) => inst
+# ==========================================
+# 階段任務 (Stages)
+# ==========================================
+stages:
+#  - lint       # 程式碼品質與靜態檢查
+#  - test       # 單元測試與整合測試
+  - build      # 打包成 Docker 映像檔並推送到 Registry
+  - deploy     # 部署到測試或生產環境
+
+
+# ==========================================
+# 全局全域設定 (Global Settings)
+# ==========================================
+variables:
+  # Python 基礎映像檔版本
+  PYTHON_IMAGE: "python:3.12-slim"
+
+  # Build & Deploy
+  DOCKER_IMAGE: "docker:24.0.5"
+  DOCKER_DIND_IMAGE: "docker:24.0.5-dind"
+
+  # 專案映像檔名稱
+  IMAGE_NAME: "pg-python-inst"
+
+  # 透過 GitLab 變數控管 Registry 位址
+#  REGISTRY_HOST: "10.88.0.20:5100"
+  REGISTRY_HOST: "172.28.113.34:5100"
+
+
+# ==========================================
+# 定義全域快取: 避免每個 Job 都要重新 pip install
+# ==========================================
+#cache:
+#  key:
+#    files:
+#      - requirements.txt
+#  paths:
+#    - .cache/pip
+#    - venv/
+
+
+# ==========================================
+# 1. Lint Stage (程式碼品質檢查)
+# ==========================================
+#lint:python:
+#  stage: lint
+#  image: $PYTHON_IMAGE
+
+
+# ==========================================
+# 2. Test Stage (自動化測試)
+# ==========================================
+#test:unit:
+#  stage: test
+#  image: $PYTHON_IMAGE
+
+
+# ==========================================
+# 3. Build Stage (容器化 + 推送至 Registry)
+# ==========================================
+build:docker:
+  stage: build
+  image: $DOCKER_IMAGE
+  variables:
+    DOCKER_HOST: ""
+    DOCKER_TLS_CERTDIR: ""
+    # 將 HTTP 白名單動態傳給 DinD (需要 config.toml 支援)
+    DOCKER_CMD_ARGUMENTS: "--insecure-registry=$REGISTRY_HOST"
+
+  before_script:
+    # 若私有 Registry 需要登入 ...
+    # - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $REGISTRY_HOST
+
+    - echo "Starting Docker Build Pipeline ..."
+
+    # [等待機制] 確保 Docker Daemon 真的活過來了才往下走
+    - |
+      echo "⏳ 等待 Docker Daemon 啟動 ..."
+      for i in $(seq 1 30); do
+        if docker info >/dev/null 2>&1; then
+          echo "✅ Docker Daemon 已成功就緒！"
+          break
+        fi
+        echo "Docker 尚未就緒，等待中 ($i/30) ..."
+        sleep 1
+      done
+    - |
+      echo "驗證不安全倉庫 (Insecure Registries) 設定 ..."
+      sleep 3
+      docker info | grep -i "Insecure Registries" -A 2 || echo "⚠️ 沒抓到白名單資訊，但直接試推 ..."
+
+  script:
+    - echo "開始執行 Docker Build 流程 ..."
+    - |
+      if [ "$CI_COMMIT_BRANCH" == "main" ]; then
+        IMAGE_TAG="latest"
+      else
+        IMAGE_TAG=$CI_COMMIT_REF_SLUG
+      fi
+
+      # 定義兩種路徑
+      COMMIT_IMAGE_PATH="$REGISTRY_HOST/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA"
+      STABLE_IMAGE_PATH="$REGISTRY_HOST/$IMAGE_NAME:$IMAGE_TAG"
+
+      echo "📦 正在編譯映像檔並打上雙標籤 ..."
+      echo "  - 歷史標籤: $COMMIT_IMAGE_PATH"
+      echo "  - 部署標籤: $STABLE_IMAGE_PATH"
+      
+      # 1. 進行 Docker Build (編譯並同時打上兩個標籤)
+      docker build -t $COMMIT_IMAGE_PATH -t $STABLE_IMAGE_PATH .
+      
+      echo "🔄 正在推送到地端私有 Registry ..."
+      # 2. 推送 Commit SHA 版（留作歷史備份與紀錄）
+      docker push $COMMIT_IMAGE_PATH
+      
+      # 3. 推送 Stable 版（給 docker-compose 用的固定標籤）
+      docker push $STABLE_IMAGE_PATH
+      
+      echo "✅ 推送成功"
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+
+# ==========================================
+# 4. Deploy Stage
+# ==========================================
+deploy:staging:
+  stage: deploy
+  image: $DOCKER_IMAGE
+  before_script:
+    # Local
+    - apk add --no-cache make
+
+    # SSH
+#    - apk add --no-cache openssh-client make
+#    - eval $(ssh-agent -s)
+#    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+#    - mkdir -p ~/.ssh && chmod 700 ~/.ssh
+#    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
+  script:
+    - echo "正在連線伺服器進行遠端 DAG 還原 ..."
+#    - |
+#      ssh user@staging-server.local "
+#        echo '📂 進入專案目錄...' && \
+#        cd ~/git_project/PG-Infrastructure/infra/docker-compose && \
+#        \
+#        echo '🔄 執行 Makefile 自動化重啟與拉取...' && \
+#        make airflow action=restart && \
+#        \
+#        echo '✅ 地端 Airflow 服務已成功由最新映像檔還原與覆蓋！'
+#      "
+    - |
+      cd /docker-compose
+      echo "🔄 執行本機路徑下的 Makefile 機制 ..."
+      make VERSION=$CI_COMMIT_SHORT_SHA airflow-hot-update
+      sleep 10
+      echo "✅ Airflow 服務 → 完成熱更新"
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
