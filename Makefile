@@ -67,15 +67,19 @@ inst-bash:
 
 inst-push:
 	@echo "* Run"
-	@if [ -z "$(ver)" ]; then \
-		echo "Error: 必須指定 IMAGE VERSION，ex: make inst-push ver=v1"; \
+	@if [ -z "$(image)" ]; then \
+		echo "Error: 必須指定 VERSION，ex: make inst-push image=??? registry=???"; \
 		exit 1; \
 	fi
-	docker tag pg-python-inst:$(ver) $(REGISTRY_HOST)/pg-python-inst:$(ver)
-	docker push $(REGISTRY_HOST)/pg-python-inst:$(ver)
+	@if [ -z "$(registry)" ]; then \
+		echo "Error: 必須指定 VERSION，ex: make inst-push image=??? registry=???"; \
+		exit 1; \
+	fi
+	docker tag pg-python-inst:$(image) $(REGISTRY_HOST)/pg-python-inst:$(registry)
+	docker push $(REGISTRY_HOST)/pg-python-inst:$(registry)
 
 	curl http://$(REGISTRY_HOST)/v2/pg-python-inst/tags/list
-	skopeo inspect --tls-verify=false docker://$(REGISTRY_HOST)/pg-python-inst:$(ver) | jq '{Created, Architecture, RepoTags}'
+	skopeo inspect --tls-verify=false docker://$(REGISTRY_HOST)/pg-python-inst:$(registry) | jq '{Created, Architecture, RepoTags}'
 
 	@echo "✅  <make inst-bash> done."
 
@@ -143,14 +147,18 @@ cp-bash:
 
 cp-push:
 	@echo "* Run"
-	@if [ -z "$(ver)" ]; then \
-		echo "Error: 必須指定 IMAGE VERSION，ex: make inst-push ver=v1"; \
+	@if [ -z "$(image)" ]; then \
+		echo "Error: 必須指定 VERSION，ex: make cp-push image=??? registry=???"; \
 		exit 1; \
 	fi
-	docker tag pg-python-cp:$(ver) $(REGISTRY_HOST)/pg-python-cp:$(ver)
-	docker push $(REGISTRY_HOST)/pg-python-cp:$(ver)
+	@if [ -z "$(registry)" ]; then \
+		echo "Error: 必須指定 VERSION，ex: make cp-push image=??? registry=???"; \
+		exit 1; \
+	fi
+	docker tag pg-python-cp:$(image) $(REGISTRY_HOST)/pg-python-cp:$(registry)
+	docker push $(REGISTRY_HOST)/pg-python-cp:$(registry)
 
 	curl http://$(REGISTRY_HOST)/v2/pg-python-cp/tags/list
-	skopeo inspect --tls-verify=false docker://$(REGISTRY_HOST)/pg-python-cp:$(ver) | jq '{Created, Architecture, RepoTags}'
+	skopeo inspect --tls-verify=false docker://$(REGISTRY_HOST)/pg-python-cp:$(registry) | jq '{Created, Architecture, RepoTags}'
 
-	@echo "✅  <make inst-bash> done."
+	@echo "✅  <make cp-bash> done."
