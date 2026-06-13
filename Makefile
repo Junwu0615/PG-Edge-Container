@@ -1,5 +1,7 @@
-.PHONY: inst-build inst-run inst-clear inst-logs inst-bash \
-cp-build cp-run cp-clear cp-logs cp-bash
+REGISTRY_HOST := 127.0.0.1:5100
+
+.PHONY: inst-build inst-run inst-clear inst-logs inst-bash inst-push \
+cp-build cp-run cp-clear cp-logs cp-bash cp-push
 
 inst-build:
 	@echo "* Before Build"
@@ -63,6 +65,20 @@ inst-bash:
 	docker exec -it $(name) bash
 	@echo "✅  <make inst-bash> done."
 
+inst-push:
+	@echo "* Run"
+	@if [ -z "$(ver)" ]; then \
+		echo "Error: 必須指定 IMAGE VERSION，ex: make inst-push ver=v1"; \
+		exit 1; \
+	fi
+	docker tag pg-python-inst:$(ver) $(REGISTRY_HOST)/pg-python-inst:$(ver)
+	docker push $(REGISTRY_HOST)/pg-python-inst:$(ver)
+
+	curl http://$(REGISTRY_HOST)/v2/pg-python-inst/tags/list
+	skopeo inspect --tls-verify=false docker://$(REGISTRY_HOST)/pg-python-inst:$(ver) | jq '{Created, Architecture, RepoTags}'
+
+	@echo "✅  <make inst-bash> done."
+
 cp-build:
 	@echo "* Before Build"
 	@if [ -z "$(ver)" ]; then \
@@ -124,3 +140,17 @@ cp-bash:
 	fi
 	docker exec -it $(name) bash
 	@echo "✅  <make cp-bash> done."
+
+cp-push:
+	@echo "* Run"
+	@if [ -z "$(ver)" ]; then \
+		echo "Error: 必須指定 IMAGE VERSION，ex: make inst-push ver=v1"; \
+		exit 1; \
+	fi
+	docker tag pg-python-cp:$(ver) $(REGISTRY_HOST)/pg-python-cp:$(ver)
+	docker push $(REGISTRY_HOST)/pg-python-cp:$(ver)
+
+	curl http://$(REGISTRY_HOST)/v2/pg-python-cp/tags/list
+	skopeo inspect --tls-verify=false docker://$(REGISTRY_HOST)/pg-python-cp:$(ver) | jq '{Created, Architecture, RepoTags}'
+
+	@echo "✅  <make inst-bash> done."
