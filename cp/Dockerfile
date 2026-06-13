@@ -36,6 +36,9 @@ COPY --from=builder /install /usr/local
 # 複製原始碼
 COPY ./cp/src /app/src
 
+# 預先建立檔案夾免得腳本權限不足導致啟動失敗
+RUN mkdir -p /app/data && chown -R 1001:1001 /app/data
+
 # 環境變數設置
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
