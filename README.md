@@ -43,6 +43,9 @@ make cp-clear name=pg-python-cp
 make cp-bash name=pg-python-cp
 
 # registry tset
+make cp-status registry=v2 REGISTRY_HOST=127.0.0.1:5100
+make cp-status registry=v2 REGISTRY_HOST=docker-registry.k8s.local
+
 make cp-push image=v1 registry=v2 REGISTRY_HOST=127.0.0.1:5100
 make cp-push image=v1 registry=v2 REGISTRY_HOST=docker-registry.k8s.local
 ```
@@ -59,6 +62,9 @@ make inst-clear name=pg-python-edge-01
 make inst-bash name=pg-python-edge-01
 
 # registry tset
+make inst-status registry=v2 REGISTRY_HOST=127.0.0.1:5100
+make inst-status registry=v6 REGISTRY_HOST=docker-registry.k8s.local
+
 make inst-push image=v1 registry=v2 REGISTRY_HOST=127.0.0.1:5100
 make inst-push image=v1 registry=v2 REGISTRY_HOST=docker-registry.k8s.local
 ```

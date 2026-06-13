@@ -1,7 +1,7 @@
 REGISTRY_HOST := 127.0.0.1:5100
 
-.PHONY: inst-build inst-run inst-clear inst-logs inst-bash inst-push \
-cp-build cp-run cp-clear cp-logs cp-bash cp-push
+.PHONY: inst-build inst-run inst-clear inst-logs inst-bash inst-push inst-status \
+cp-build cp-run cp-clear cp-logs cp-bash cp-push cp-status
 
 inst-build:
 	@echo "* Before Build"
@@ -81,7 +81,16 @@ inst-push:
 	curl http://$(REGISTRY_HOST)/v2/pg-python-inst/tags/list
 	skopeo inspect --tls-verify=false docker://$(REGISTRY_HOST)/pg-python-inst:$(registry) | jq '{Created, Architecture, RepoTags}'
 
-	@echo "✅  <make inst-bash> done."
+	@echo "✅  <make inst-push image=$(image) registry=$(registry)> done."
+
+inst-status:
+	@if [ -z "$(registry)" ]; then \
+		echo "Error: 必須指定 VERSION，ex: make inst-status registry=???"; \
+		exit 1; \
+	fi
+	curl http://$(REGISTRY_HOST)/v2/pg-python-inst/tags/list
+	skopeo inspect --tls-verify=false docker://$(REGISTRY_HOST)/pg-python-inst:$(registry) | jq '{Created, Architecture, RepoTags}'
+	@echo "✅  <make inst-status registry=$(registry)> done."
 
 cp-build:
 	@echo "* Before Build"
@@ -161,4 +170,13 @@ cp-push:
 	curl http://$(REGISTRY_HOST)/v2/pg-python-cp/tags/list
 	skopeo inspect --tls-verify=false docker://$(REGISTRY_HOST)/pg-python-cp:$(registry) | jq '{Created, Architecture, RepoTags}'
 
-	@echo "✅  <make cp-bash> done."
+	@echo "✅  <make cp-push image=$(image) registry=$(registry)> done."
+
+cp-status:
+	@if [ -z "$(registry)" ]; then \
+		echo "Error: 必須指定 VERSION，ex: make cp-status registry=???"; \
+		exit 1; \
+	fi
+	curl http://$(REGISTRY_HOST)/v2/pg-python-cp/tags/list
+	skopeo inspect --tls-verify=false docker://$(REGISTRY_HOST)/pg-python-cp:$(registry) | jq '{Created, Architecture, RepoTags}'
+	@echo "✅  <make cp-status registry=$(registry)> done."
