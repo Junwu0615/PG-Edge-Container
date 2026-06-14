@@ -57,83 +57,7 @@ variables:
 
 
 # ==========================================
-# 3.1. Build Stage (容器化 + 推送至 Registry) => cp
-# ==========================================
-build:cp:
-  stage: build
-  image: $DOCKER_IMAGE
-
-  services:
-    - name: $DOCKER_DIND_IMAGE
-      alias: docker
-      command: [ "--insecure-registry=docker-registry.k8s.local:80" ]
-#      command: [ "--insecure-registry=$REGISTRY_HOST" ]
-
-  variables:
-#    DOCKER_HOST: ""
-    DOCKER_HOST: "tcp://docker:2375"
-
-    DOCKER_TLS_CERTDIR: ""
-    # 將 HTTP 白名單動態傳給 DinD (需要 config.toml 支援)
-    DOCKER_CMD_ARGUMENTS: "--insecure-registry=$REGISTRY_HOST"
-
-  before_script:
-    # 若私有 Registry 需要登入 ...
-    # - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $REGISTRY_HOST
-
-    - echo "Starting Docker Build Pipeline ..."
-
-    # [等待機制] 確保 Docker Daemon 真的活過來了才往下走
-    - |
-      echo "⏳ 等待 Docker Daemon 啟動 ..."
-      for i in $(seq 1 30); do
-        if docker info >/dev/null 2>&1; then
-          echo "✅ Docker Daemon 已成功就緒！"
-          break
-        fi
-        echo "Docker 尚未就緒，等待中 ($i/30) ..."
-        sleep 1
-      done
-    - |
-      echo "驗證不安全倉庫 (Insecure Registries) 設定 ..."
-      sleep 3
-      docker info | grep -i "Insecure Registries" -A 2 || echo "⚠️ 沒抓到白名單資訊，但直接試推 ..."
-
-  script:
-    - echo "開始執行 Docker Build 流程 ..."
-    - |
-      if [ "$CI_COMMIT_BRANCH" == "main" ]; then
-        IMAGE_TAG="latest"
-      else
-        IMAGE_TAG=$CI_COMMIT_REF_SLUG
-      fi
-
-      # 定義兩種路徑
-      COMMIT_IMAGE_PATH="$REGISTRY_HOST/$CP_IMAGE_NAME:$CI_COMMIT_SHORT_SHA"
-      STABLE_IMAGE_PATH="$REGISTRY_HOST/$CP_IMAGE_NAME:$IMAGE_TAG"
-
-      echo "📦 正在編譯映像檔並打上雙標籤 ..."
-      echo "  - 歷史標籤: $COMMIT_IMAGE_PATH"
-      echo "  - 部署標籤: $STABLE_IMAGE_PATH"
-      
-      # 1. 進行 Docker Build (編譯並同時打上兩個標籤)
-      docker build -t $COMMIT_IMAGE_PATH -t $STABLE_IMAGE_PATH -f ./cp/Dockerfile . --no-cache
-      
-      echo "🔄 正在推送到地端私有 Registry ..."
-      # 2. 推送 Commit SHA 版（留作歷史備份與紀錄）
-      docker push $COMMIT_IMAGE_PATH
-      
-      # 3. 推送 Stable 版（給 docker-compose 用的固定標籤）
-      docker push $STABLE_IMAGE_PATH
-      
-      echo "✅ 推送成功"
-
-  rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_BRANCH == "develop"'
-
-# ==========================================
-# 3.2. Build Stage (容器化 + 推送至 Registry) => inst
+# 3.1. Build Stage (容器化 + 推送至 Registry) => inst
 # ==========================================
 build:inst:
   stage: build
@@ -194,6 +118,83 @@ build:inst:
       
       # 1. 進行 Docker Build (編譯並同時打上兩個標籤)
       docker build -t $COMMIT_IMAGE_PATH -t $STABLE_IMAGE_PATH -f ./inst/Dockerfile . --no-cache
+      
+      echo "🔄 正在推送到地端私有 Registry ..."
+      # 2. 推送 Commit SHA 版（留作歷史備份與紀錄）
+      docker push $COMMIT_IMAGE_PATH
+      
+      # 3. 推送 Stable 版（給 docker-compose 用的固定標籤）
+      docker push $STABLE_IMAGE_PATH
+      
+      echo "✅ 推送成功"
+
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+
+
+# ==========================================
+# 3.2. Build Stage (容器化 + 推送至 Registry) => cp
+# ==========================================
+build:cp:
+  stage: build
+  image: $DOCKER_IMAGE
+
+  services:
+    - name: $DOCKER_DIND_IMAGE
+      alias: docker
+      command: [ "--insecure-registry=docker-registry.k8s.local:80" ]
+#      command: [ "--insecure-registry=$REGISTRY_HOST" ]
+
+  variables:
+#    DOCKER_HOST: ""
+    DOCKER_HOST: "tcp://docker:2375"
+
+    DOCKER_TLS_CERTDIR: ""
+    # 將 HTTP 白名單動態傳給 DinD (需要 config.toml 支援)
+    DOCKER_CMD_ARGUMENTS: "--insecure-registry=$REGISTRY_HOST"
+
+  before_script:
+    # 若私有 Registry 需要登入 ...
+    # - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $REGISTRY_HOST
+
+    - echo "Starting Docker Build Pipeline ..."
+
+    # [等待機制] 確保 Docker Daemon 真的活過來了才往下走
+    - |
+      echo "⏳ 等待 Docker Daemon 啟動 ..."
+      for i in $(seq 1 30); do
+        if docker info >/dev/null 2>&1; then
+          echo "✅ Docker Daemon 已成功就緒！"
+          break
+        fi
+        echo "Docker 尚未就緒，等待中 ($i/30) ..."
+        sleep 1
+      done
+    - |
+      echo "驗證不安全倉庫 (Insecure Registries) 設定 ..."
+      sleep 3
+      docker info | grep -i "Insecure Registries" -A 2 || echo "⚠️ 沒抓到白名單資訊，但直接試推 ..."
+
+  script:
+    - echo "開始執行 Docker Build 流程 ..."
+    - |
+      if [ "$CI_COMMIT_BRANCH" == "main" ]; then
+        IMAGE_TAG="latest"
+      else
+        IMAGE_TAG=$CI_COMMIT_REF_SLUG
+      fi
+
+      # 定義兩種路徑
+      COMMIT_IMAGE_PATH="$REGISTRY_HOST/$CP_IMAGE_NAME:$CI_COMMIT_SHORT_SHA"
+      STABLE_IMAGE_PATH="$REGISTRY_HOST/$CP_IMAGE_NAME:$IMAGE_TAG"
+
+      echo "📦 正在編譯映像檔並打上雙標籤 ..."
+      echo "  - 歷史標籤: $COMMIT_IMAGE_PATH"
+      echo "  - 部署標籤: $STABLE_IMAGE_PATH"
+      
+      # 1. 進行 Docker Build (編譯並同時打上兩個標籤)
+      docker build -t $COMMIT_IMAGE_PATH -t $STABLE_IMAGE_PATH -f ./cp/Dockerfile . --no-cache
       
       echo "🔄 正在推送到地端私有 Registry ..."
       # 2. 推送 Commit SHA 版（留作歷史備份與紀錄）
