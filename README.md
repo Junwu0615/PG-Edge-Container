@@ -36,6 +36,7 @@ tree -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data|charts'
 ### *B.　Command Platform*
 ```
 # local test
+make cp-copy
 make cp-build ver=v1
 make cp-run ver=v1
 make cp-logs name=pg-python-cp
@@ -55,6 +56,7 @@ make cp-push image=v1 registry=v2 REGISTRY_HOST=docker-registry.k8s.local
 ### *C.　Instance*
 ```
 # local test
+make inst-copy
 make inst-build ver=v1
 make inst-run ver=v1
 make inst-logs name=pg-python-edge-01

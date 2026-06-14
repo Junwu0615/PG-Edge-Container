@@ -1,14 +1,11 @@
 REGISTRY_HOST := 127.0.0.1:5100
 
-.PHONY: inst-build inst-run inst-clear inst-logs inst-bash inst-push inst-status \
-cp-build cp-run cp-clear cp-logs cp-bash cp-push cp-status
+.PHONY: inst-build inst-run inst-clear inst-logs inst-bash inst-push inst-status inst-copy \
+cp-build cp-run cp-clear cp-logs cp-bash cp-push cp-status cp-copy
 
-inst-build:
-	@echo "* Before Build"
-	@if [ -z "$(ver)" ]; then \
-		echo "Error: 必須指定 IMAGE VERSION，ex: make inst-build ver=v1"; \
-		exit 1; \
-	fi
+
+inst-copy:
+	@echo "* Copy src From PG-APP-Core"
 	mkdir -p $(CURDIR)/inst/data
 	rm -rf ./inst/src
 	mkdir -p ./inst/src
@@ -21,7 +18,13 @@ inst-build:
 	rm -rf ./inst/src/core/v2/cp
 	rm -rf ./inst/src/core/v2/scripts
 	cp ./inst/.env ./inst/src/core/v2/inst/.env
+	@echo "✅  <make inst-copy> done."
 
+inst-build:
+	@if [ -z "$(ver)" ]; then \
+		echo "Error: 必須指定 IMAGE VERSION，ex: make inst-build ver=v1"; \
+		exit 1; \
+	fi
 	@echo "* Build"
 	docker build -t pg-python-inst:$(ver) -f ./inst/Dockerfile . --no-cache
 	@echo "✅  <make inst-build> done."
@@ -92,13 +95,9 @@ inst-status:
 	skopeo inspect --tls-verify=false docker://$(REGISTRY_HOST)/pg-python-inst:$(registry) | jq '{Created, Architecture, RepoTags}'
 	@echo "✅  <make inst-status registry=$(registry)> done."
 
-cp-build:
-	@echo "* Before Build"
-	@if [ -z "$(ver)" ]; then \
-		echo "Error: 必須指定 IMAGE VERSION，ex: make cp-build ver=v1"; \
-		exit 1; \
-	fi
-	#mkdir -p $(CURDIR)/cp/data
+cp-copy:
+	@echo "* Copy src From PG-APP-Core"
+	mkdir -p $(CURDIR)/cp/data
 	rm -rf ./cp/src
 	mkdir -p ./cp/src
 	cp -r ../PG-APP-Core/src ./cp
@@ -110,7 +109,13 @@ cp-build:
 	rm -rf ./cp/src/core/v2/inst
 	rm -rf ./cp/src/core/v2/scripts
 	cp ./cp/.env ./cp/src/core/v2/cp/.env
+	@echo "✅  <make cp-copy> done."
 
+cp-build: cp-copy
+	@if [ -z "$(ver)" ]; then \
+		echo "Error: 必須指定 IMAGE VERSION，ex: make cp-build ver=v1"; \
+		exit 1; \
+	fi
 	@echo "* Build"
 	docker build -t pg-python-cp:$(ver) -f ./cp/Dockerfile . --no-cache
 	@echo "✅  <make cp-build> done."
