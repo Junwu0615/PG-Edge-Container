@@ -38,6 +38,7 @@ COPY ./cp/src /app/src
 
 # 預先建立檔案夾免得腳本權限不足導致啟動失敗
 RUN mkdir -p /app/data && chown -R 1001:1001 /app/data
+RUN mkdir -p /app/tmp && chown -R 1001:1001 /app/tmp
 
 # 環境變數設置
 ENV PYTHONDONTWRITEBYTECODE=1 \
