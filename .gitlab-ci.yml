@@ -67,11 +67,10 @@ build:inst:
     - name: $DOCKER_DIND_IMAGE
       alias: docker
       command: [ "--insecure-registry=docker-registry.k8s.local:80" ]
-#      command: [ "--insecure-registry=$REGISTRY_HOST" ]
 
   variables:
-#    DOCKER_HOST: ""
-    DOCKER_HOST: "tcp://docker:2375"
+    # DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_HOST: "tcp://127.0.0.1:2375"
 
     DOCKER_TLS_CERTDIR: ""
     # 將 HTTP 白名單動態傳給 DinD (需要 config.toml 支援)
@@ -117,7 +116,8 @@ build:inst:
       echo "  - 部署標籤: $STABLE_IMAGE_PATH"
       
       # 1. 進行 Docker Build (編譯並同時打上兩個標籤)
-      docker build -t $COMMIT_IMAGE_PATH -t $STABLE_IMAGE_PATH -f ./inst/Dockerfile . --no-cache
+      # docker build -t $COMMIT_IMAGE_PATH -t $STABLE_IMAGE_PATH -f ./inst/Dockerfile . --no-cache
+      docker build --network host -t $COMMIT_IMAGE_PATH -t $STABLE_IMAGE_PATH -f ./inst/Dockerfile . --no-cache
       
       echo "🔄 正在推送到地端私有 Registry ..."
       # 2. 推送 Commit SHA 版（留作歷史備份與紀錄）
@@ -144,11 +144,10 @@ build:cp:
     - name: $DOCKER_DIND_IMAGE
       alias: docker
       command: [ "--insecure-registry=docker-registry.k8s.local:80" ]
-#      command: [ "--insecure-registry=$REGISTRY_HOST" ]
 
   variables:
-#    DOCKER_HOST: ""
-    DOCKER_HOST: "tcp://docker:2375"
+    # DOCKER_HOST: "tcp://docker:2375"
+    DOCKER_HOST: "tcp://127.0.0.1:2375"
 
     DOCKER_TLS_CERTDIR: ""
     # 將 HTTP 白名單動態傳給 DinD (需要 config.toml 支援)
@@ -194,7 +193,8 @@ build:cp:
       echo "  - 部署標籤: $STABLE_IMAGE_PATH"
       
       # 1. 進行 Docker Build (編譯並同時打上兩個標籤)
-      docker build -t $COMMIT_IMAGE_PATH -t $STABLE_IMAGE_PATH -f ./cp/Dockerfile . --no-cache
+      # docker build -t $COMMIT_IMAGE_PATH -t $STABLE_IMAGE_PATH -f ./cp/Dockerfile . --no-cache
+      docker build --network host -t $COMMIT_IMAGE_PATH -t $STABLE_IMAGE_PATH -f ./cp/Dockerfile . --no-cache
       
       echo "🔄 正在推送到地端私有 Registry ..."
       # 2. 推送 Commit SHA 版（留作歷史備份與紀錄）
