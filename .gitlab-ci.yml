@@ -1,4 +1,4 @@
-# TODO 測試模式: docker compose ( gitlab ci ) + gitops ( k3s ) => cp + inst
+# TODO 測試模式: docker compose ( gitlab ci ) + gitops ( k3s ) → cp + inst
 # ==========================================
 # 階段任務 (Stages)
 # ==========================================
@@ -57,7 +57,7 @@ variables:
 
 
 # ==========================================
-# 3.1. Build Stage (容器化 + 推送至 Registry) => inst
+# 3.1. Build Stage (容器化 + 推送至 Registry) → inst
 # ==========================================
 build:inst:
   stage: build
@@ -134,7 +134,7 @@ build:inst:
 
 
 # ==========================================
-# 3.2. Build Stage (容器化 + 推送至 Registry) => cp
+# 3.2. Build Stage (容器化 + 推送至 Registry) → cp
 # ==========================================
 build:cp:
   stage: build
